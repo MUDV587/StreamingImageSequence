@@ -60,7 +60,6 @@ add_definitions(-DUNICODE -D_UNICODE)
 
 
 #Specify available modules
-add_subdirectory(${src_root}/External/stb)
 add_subdirectory(${src_root}/CommonLib)
 add_subdirectory(${src_root}/Loader)
 
