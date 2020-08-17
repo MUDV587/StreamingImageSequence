@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
@@ -35,26 +36,34 @@ namespace UnityEditor.StreamingImageSequence {
 
             MD5 md5 = MD5.Create();
 
+            long totalLength = 0;
             for(int i = 0; i < files.Length; i++)
             {
                 string file = files[i];
 
                 // hash path
-                // string relativePath = file.Substring(path.Length + 1);
-                // byte[] pathBytes    = Encoding.UTF8.GetBytes(relativePath.ToLower());
-                // md5.TransformBlock(pathBytes, 0, pathBytes.Length, pathBytes, 0);
+                string relativePath = file.Substring(path.Length + 1);
+                byte[] pathBytes    = Encoding.UTF8.GetBytes(relativePath.ToLower());
+                md5.TransformBlock(pathBytes, 0, pathBytes.Length, pathBytes, 0);
 
                 // hash contents
-                byte[] contentBytes = File.ReadAllBytes(file);
+                // byte[] contentBytes = File.ReadAllBytes(file);
+                long length = new System.IO.FileInfo(file).Length;
+                byte[] contentBytes = BitConverter.GetBytes(length);
+
                 if (i == files.Length - 1)
-                    md5.TransformFinalBlock(contentBytes, 0, contentBytes.Length);
+                     md5.TransformFinalBlock(contentBytes, 0, contentBytes.Length);
                 else
-                    md5.TransformBlock(contentBytes, 0, contentBytes.Length, contentBytes, 0);
+                     md5.TransformBlock(contentBytes, 0, contentBytes.Length, contentBytes, 0);
+                
             }
 
             watch.Stop();
             long elapsedMs = watch.ElapsedMilliseconds;            
-            Debug.Log("FileCount: " + files.Length + " Hash: " + md5.Hash + " Elapsed Time" + elapsedMs);
+            Debug.Log("FileCount: " + files.Length 
+                + " Hash: " + BitConverter.ToString(md5.Hash).Replace("-", "").ToLowerInvariant() 
+                + " Elapsed Time" + elapsedMs 
+                + "TotalLength: " + totalLength );
         }
         
 //----------------------------------------------------------------------------------------------------------------------
