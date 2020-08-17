@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Security.Cryptography;
 using System.Text;
-using UnityEngine;
 using UnityEngine.StreamingImageSequence;
+using Debug = UnityEngine.Debug;
 
 namespace UnityEditor.StreamingImageSequence {
 
@@ -21,6 +24,39 @@ namespace UnityEditor.StreamingImageSequence {
             ImageSequenceImporter.ImportPictureFiles(ImageFileImporterParam.Mode.StreamingAssets, path, null);
         }
 
+        [MenuItem(StreamingImageSequenceConstants.MENU_PATH +  "TestMD5", false, 1)]
+        private static void TestMD5() {
+            string path = "";
+            
+            Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
+// the code that you want to measure comes here
+            // assuming you want to include nested folders
+            string[] files = Directory.GetFiles(path, "*.png", SearchOption.AllDirectories);
+
+            MD5 md5 = MD5.Create();
+
+            for(int i = 0; i < files.Length; i++)
+            {
+                string file = files[i];
+
+                // hash path
+                // string relativePath = file.Substring(path.Length + 1);
+                // byte[] pathBytes    = Encoding.UTF8.GetBytes(relativePath.ToLower());
+                // md5.TransformBlock(pathBytes, 0, pathBytes.Length, pathBytes, 0);
+
+                // hash contents
+                byte[] contentBytes = File.ReadAllBytes(file);
+                if (i == files.Length - 1)
+                    md5.TransformFinalBlock(contentBytes, 0, contentBytes.Length);
+                else
+                    md5.TransformBlock(contentBytes, 0, contentBytes.Length, contentBytes, 0);
+            }
+
+            watch.Stop();
+            long elapsedMs = watch.ElapsedMilliseconds;            
+            Debug.Log("FileCount: " + files.Length + " Hash: " + md5.Hash + " Elapsed Time" + elapsedMs);
+        }
+        
 //----------------------------------------------------------------------------------------------------------------------
 
         [MenuItem(StreamingImageSequenceConstants.MENU_PATH + "Import AE Timeline", false, 10)]
